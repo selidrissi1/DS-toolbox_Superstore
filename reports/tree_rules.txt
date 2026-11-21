@@ -1,0 +1,34 @@
+|--- discount <= 0.25
+|   |--- discount <= 0.13
+|   |   |--- discount <= 0.05
+|   |   |   |--- weights: [3364.00, 0.00] class: 0
+|   |   |--- discount >  0.05
+|   |   |   |--- ship_mode_Standard Class <= 0.50
+|   |   |   |   |--- weights: [22.00, 2.00] class: 0
+|   |   |   |--- ship_mode_Standard Class >  0.50
+|   |   |   |   |--- weights: [39.00, 0.00] class: 0
+|   |--- discount >  0.13
+|   |   |--- sub_category_Storage <= 0.50
+|   |   |   |--- sub_category_Accessories <= 0.50
+|   |   |   |   |--- weights: [1976.00, 186.00] class: 0
+|   |   |   |--- sub_category_Accessories >  0.50
+|   |   |   |   |--- weights: [151.00, 70.00] class: 0
+|   |   |--- sub_category_Storage >  0.50
+|   |   |   |--- ship_mode_First Class <= 0.50
+|   |   |   |   |--- weights: [84.00, 98.00] class: 1
+|   |   |   |--- ship_mode_First Class >  0.50
+|   |   |   |   |--- weights: [17.00, 11.00] class: 0
+|--- discount >  0.25
+|   |--- discount <= 0.42
+|   |   |--- sub_category_Tables <= 0.50
+|   |   |   |--- sub_category_Chairs <= 0.50
+|   |   |   |   |--- weights: [24.00, 96.00] class: 1
+|   |   |   |--- sub_category_Chairs >  0.50
+|   |   |   |   |--- weights: [8.00, 93.00] class: 1
+|   |   |--- sub_category_Tables >  0.50
+|   |   |   |--- region_Central <= 0.50
+|   |   |   |   |--- weights: [0.00, 73.00] class: 1
+|   |   |   |--- region_Central >  0.50
+|   |   |   |   |--- weights: [1.00, 22.00] class: 1
+|   |--- discount >  0.42
+|   |   |--- weights: [0.00, 658.00] class: 1

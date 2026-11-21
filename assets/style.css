@@ -1,0 +1,33 @@
+/* Dash loads every file in assets/ automatically. Same look as reports/report.html. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500;600&display=swap");
+
+:root { --ink: #0b0b10; --ink2: #52514e; --mist: #eafaf2; --rule: #e1e0d9; }
+* { box-sizing: border-box; min-width: 0; }
+body { margin: 0; background: #fff; color: var(--ink); font: 17px/1.55 Inter, system-ui, sans-serif; }
+.band { padding: clamp(28px, 4vw, 56px) max(5vw, 16px); }
+.wrap { max-width: 1240px; margin: 0 auto; }
+.head { background: var(--mist); }
+h1, h2, h3 { font-family: "Space Grotesk", Inter, sans-serif; font-weight: 600; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(30px, 4vw, 48px); line-height: 1.05; max-width: 22ch; }
+h2 { font-size: 30px; line-height: 1.1; margin-bottom: 8px; }
+h3 { font-size: 21px; line-height: 1.25; margin: 32px 0 4px; font-weight: 500; }
+.lede { font-size: 19px; color: var(--ink2); max-width: 62ch; margin: 16px 0 0; }
+.meta { font-size: 14px; color: var(--ink2); margin: 0 0 12px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); border-top: 1px solid var(--ink); margin-top: 28px; }
+.kpi { padding: 14px 16px 4px 0; border-right: 1px solid var(--rule); }
+.kpi:last-child { border-right: 0; }
+.kpi b { display: block; font: 600 clamp(26px, 3vw, 36px)/1.1 "Space Grotesk", Inter, sans-serif; white-space: nowrap; }
+.kpi span { font-size: 14px; color: var(--ink2); }
+.q { font-size: 18px; color: var(--ink2); max-width: 70ch; margin: 0; }
+.note { font-size: 15px; color: var(--ink2); max-width: 75ch; margin: 4px 0 0; }
+.pair { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); gap: 24px 40px; }
+section + section { border-top: 1px solid var(--rule); }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 12px 0; }
+.controls .dash-dropdown, .controls > div:last-child { width: 260px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 600; border-bottom: 1px solid var(--ink); }
+.metrics td:not(:first-child), .metrics th:not(:first-child) { text-align: right; white-space: nowrap; }
+details { margin-top: 16px; font-size: 14px; }
+pre { overflow-x: auto; background: #f6f6f3; padding: 12px; font-size: 13px; }
+.when { font-size: 18px; max-width: 70ch; }

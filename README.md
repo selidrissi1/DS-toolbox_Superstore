@@ -49,10 +49,15 @@ python dashboard.py               # 5. Dash app         -> http://127.0.0.1:8050
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `.github/workflows/pipeline.yml` | Push of a new file in `data/batches/` (or manual run) | Four jobs chained with `needs`: clean → indicators → ml → report. Uploads `report.html` as the `superstore-report` artifact. |
+| `.github/workflows/simulate.yml` | **Run workflow** button in Actions (choose 1–4 batches) | Runs `batch_simulator.py` in the cloud: sends the next batch(es), commits and pushes them, then starts `pipeline.yml`. |
+| `.github/workflows/pipeline.yml` | Push of a new file in `data/batches/`, or started by `simulate.yml` | Four jobs chained with `needs`: clean → indicators → ml → report. Uploads `report.html` as the `superstore-report` artifact. |
 | `.github/workflows/ci.yml` | Every pull request to `main` | Runs all scripts on the full dataset so broken code never reaches `main`. |
 
-Simulate new data arriving with the course BatchLoader (`batch_simulator.py`, adapted to this project):
+### Simulating new data
+
+**From GitHub (no laptop needed):** Actions → **simulate-batch** → **Run workflow** → choose how many batches. A push made with the workflow’s own token does not start other workflows, so `simulate.yml` starts `pipeline.yml` itself.
+
+**From a laptop**, with the course BatchLoader (`batch_simulator.py`, adapted to this project):
 
 ```bash
 python batch_simulator.py              # writes data/batches/batch_XXX.csv (2,500 lines, in date order), commits and pushes it

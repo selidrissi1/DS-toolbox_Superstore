@@ -43,3 +43,20 @@ python dashboard.py               # 5. Dash app         -> http://127.0.0.1:8050
 - **Discount bands:** 0%, 1-20%, 21-40%, above 40%.
 - **Basket:** all lines with the same Order ID. **Basket rescue rate:** share of orders with a discounted loss-making line whose total profit is still positive.
 - **Seasonality index:** sales in a calendar month / average monthly sales.
+
+
+## Automation (GitHub Actions)
+
+| Workflow | Trigger | What it does |
+| --- | --- | --- |
+| `.github/workflows/pipeline.yml` | Push of a new file in `data/batches/` (or manual run) | Four jobs chained with `needs`: clean → indicators → ml → report. Uploads `report.html` as the `superstore-report` artifact. |
+| `.github/workflows/ci.yml` | Every pull request to `main` | Runs all scripts on the full dataset so broken code never reaches `main`. |
+
+Simulate new data arriving:
+
+```bash
+python batch_simulator.py          # writes the next month to data/batches/YYYY-MM.csv
+git add data/batches && git commit -m "Batch YYYY-MM" && git push   # triggers pipeline.yml
+```
+
+`data_exam.py` reads **all** batches received so far (or the full Kaggle file when there are none), so no state is saved between runs and a failed run is fixed by rerunning.

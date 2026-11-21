@@ -1,0 +1,75 @@
+# Runs the full pipeline each time a new batch of orders is pushed.
+# Stages: clean -> indicators -> ml -> report, chained with "needs"
+# so a failure shows exactly which stage broke.
+name: pipeline
+
+on:
+  push:
+    branches: [main]
+    paths: ["data/batches/**"]   # trigger only when new data arrives
+  workflow_dispatch:              # manual rerun button
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: python data_exam.py          # reads ALL batches received so far
+      - uses: actions/upload-artifact@v4
+        with: { name: clean-data, path: data/clean/ }
+
+  indicators:
+    needs: clean
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with: { name: clean-data, path: data/clean/ }
+      - run: python indicators.py
+      - uses: actions/upload-artifact@v4
+        with: { name: metrics, path: reports/metrics/ }
+
+  ml:
+    needs: indicators
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with: { name: clean-data, path: data/clean/ }
+      - uses: actions/download-artifact@v4
+        with: { name: metrics, path: reports/metrics/ }
+      - run: python ml_model.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ml-results
+          path: |
+            reports/ml_evaluation.json
+            reports/tree_rules.txt
+            reports/metrics/ml_*.csv
+
+  report:
+    needs: ml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with: { name: clean-data, path: data/clean/ }
+      - uses: actions/download-artifact@v4
+        with: { name: metrics, path: reports/metrics/ }
+      - uses: actions/download-artifact@v4
+        with: { name: ml-results, path: reports/ }
+      - run: python export_report.py
+      - uses: actions/upload-artifact@v4
+        with: { name: superstore-report, path: reports/report.html }

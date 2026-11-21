@@ -1,0 +1,41 @@
+# "Simulate batch" button: runs the course batch simulator (batch_simulator.py)
+# in the cloud. It sends the next batch(es) of orders, commits and pushes them,
+# then starts the pipeline on the new data. No laptop needed.
+name: simulate-batch
+
+on:
+  workflow_dispatch:
+    inputs:
+      batches:
+        description: "How many batches to send (2,500 lines each; 4 = all the data)"
+        type: choice
+        options: ["1", "2", "3", "4"]
+        default: "1"
+
+permissions:
+  contents: write   # push the new batch files
+  actions: write    # start pipeline.yml
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+      - run: pip install pandas GitPython
+      - name: Send batch(es) with the course simulator
+        env:
+          BATCHES: ${{ inputs.batches }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          python batch_simulator.py --batches "$BATCHES"
+          git fetch origin main
+          test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || { echo "Push failed"; exit 1; }
+      # A push made with the workflow's own token does not start other
+      # workflows, so the pipeline is started explicitly.
+      - name: Start the pipeline on the new data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pipeline.yml --ref main --repo "${{ github.repository }}"

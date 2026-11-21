@@ -1,0 +1,24 @@
+# Checks every pull request: the scripts must run end to end on the full
+# dataset before a branch can be merged, so broken code never reaches main.
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  run-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: pip }
+      - run: pip install -r requirements.txt
+      - name: Run the pipeline on the full Kaggle file
+        run: |
+          rm -f data/batches/*.csv
+          python data_exam.py
+          python indicators.py
+          python ml_model.py
+          python export_report.py
+          python -c "import dashboard"   # the Dash app must at least import

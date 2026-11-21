@@ -1,6 +1,6 @@
 # Superstore discount analysis
 
-Data Science Toolbox (QM505E) group project, Rennes School of Business.
+Data Science Toolbox (QM505E) project, Rennes School of Business.
 
 **Dataset:** [Superstore Dataset on Kaggle](https://www.kaggle.com/datasets/vivek468/superstore-dataset-final): 9,994 order lines, 21 columns, orders from 2014 to 2017.
 
@@ -34,6 +34,7 @@ python dashboard.py               # 5. Dash app         -> http://127.0.0.1:8050
 | `figures.py` | Plotly charts shared by the dashboard and the report |
 | `dashboard.py` | Dash app with the full story and a sub-category dropdown |
 | `export_report.py` | Same story as one static HTML file, for the GitHub Actions artifact |
+| `batch_simulator.py` | Course BatchLoader: sends the data in batches and pushes each one to GitHub |
 | `assets/style.css` | Dashboard styling (loaded by Dash automatically) |
 
 ## Definitions
@@ -44,7 +45,6 @@ python dashboard.py               # 5. Dash app         -> http://127.0.0.1:8050
 - **Basket:** all lines with the same Order ID. **Basket rescue rate:** share of orders with a discounted loss-making line whose total profit is still positive.
 - **Seasonality index:** sales in a calendar month / average monthly sales.
 
-
 ## Automation (GitHub Actions)
 
 | Workflow | Trigger | What it does |
@@ -52,11 +52,11 @@ python dashboard.py               # 5. Dash app         -> http://127.0.0.1:8050
 | `.github/workflows/pipeline.yml` | Push of a new file in `data/batches/` (or manual run) | Four jobs chained with `needs`: clean → indicators → ml → report. Uploads `report.html` as the `superstore-report` artifact. |
 | `.github/workflows/ci.yml` | Every pull request to `main` | Runs all scripts on the full dataset so broken code never reaches `main`. |
 
-Simulate new data arriving:
+Simulate new data arriving with the course BatchLoader (`batch_simulator.py`, adapted to this project):
 
 ```bash
-python batch_simulator.py          # writes the next month to data/batches/YYYY-MM.csv
-git add data/batches && git commit -m "Batch YYYY-MM" && git push   # triggers pipeline.yml
+python batch_simulator.py              # writes data/batches/batch_XXX.csv (2,500 lines, in date order), commits and pushes it
+python batch_simulator.py --batches 4  # sends all four batches, 3 s apart
 ```
 
-`data_exam.py` reads **all** batches received so far (or the full Kaggle file when there are none), so no state is saved between runs and a failed run is fixed by rerunning.
+Each push triggers `pipeline.yml`. `data_exam.py` reads **all** batches received so far (or the full Kaggle file when there are none), so no state is saved between runs and a failed run is fixed by rerunning. When batches arrive quickly, `concurrency` cancels the older runs: only the run with the newest data finishes. To start over, delete `data/batches/batch_*.csv`.

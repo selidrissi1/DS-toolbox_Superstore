@@ -9,6 +9,12 @@ on:
     paths: ["data/batches/**"]   # trigger only when new data arrives
   workflow_dispatch:              # manual rerun button
 
+# Batches can arrive seconds apart: cancel the older run, so only the
+# run with the newest data finishes and publishes the report.
+concurrency:
+  group: pipeline
+  cancel-in-progress: true
+
 jobs:
   clean:
     runs-on: ubuntu-latest

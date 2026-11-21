@@ -7,9 +7,12 @@ cleans the data, and saves the result to data/clean/superstore_clean.csv.
 Run:  python data_exam.py
 """
 
+import glob
+
 import pandas as pd
 
 RAW_PATH = "data/raw/Sample - Superstore.csv"
+BATCH_GLOB = "data/batches/*.csv"   # filled one month at a time by batch_simulator.py
 CLEAN_PATH = "data/clean/superstore_clean.csv"
 
 CATEGORICAL_COLUMNS = ["Ship Mode", "Segment", "Country", "Region", "Category", "Sub-Category"]
@@ -20,8 +23,19 @@ BAND_EDGES = [-0.01, 0.0, 0.20, 0.40, 1.0]
 BAND_LABELS = ["0%", "1-20%", "21-40%", ">40%"]
 
 
-def load_raw(path=RAW_PATH):
-    """Load the raw CSV. The file contains special characters, so it needs latin-1."""
+def load_raw(path=RAW_PATH, batch_glob=BATCH_GLOB):
+    """Load the raw data. The files contain special characters, so they need latin-1.
+
+    If batches exist (pipeline mode), read ALL batches received so far, so no state
+    is saved between runs and a failed run is fixed by rerunning. Otherwise read the
+    full Kaggle file (local mode).
+    """
+    batch_files = sorted(glob.glob(batch_glob))
+    if batch_files:
+        print(f"Reading {len(batch_files)} batch file(s) from data/batches/")
+        return pd.concat(
+            [pd.read_csv(f, encoding="latin-1") for f in batch_files], ignore_index=True
+        )
     return pd.read_csv(path, encoding="latin-1")
 
 
@@ -69,7 +83,9 @@ def clean(df):
 
     # 4. Drop columns that carry no information for our questions.
     #    Row ID is an index; Country has a single value ("United States").
-    df = df.drop(columns=["Row ID", "Country"])
+    #    Sort by Row ID first: batches arrive by month, and a fixed row order keeps
+    #    the ML train/test split (and so its scores) identical in every run.
+    df = df.sort_values("Row ID").drop(columns=["Row ID", "Country"])
 
     # 5. Remove stray spaces in text columns.
     text_columns = [c for c in df.columns if pd.api.types.is_string_dtype(df[c])]
